@@ -341,15 +341,20 @@ export default async function profilesPlugin(fastify, opts) {
         const payloadString = JSON.stringify(payload);
         const invalidSubs = [];
 
-        for (const subscription of subscriptions) {
-            try {
-                await webpush.sendNotification(subscription, payloadString);
-            } catch (error) {
+        const results = await Promise.allSettled(
+            subscriptions.map(subscription =>
+                webpush.sendNotification(subscription, payloadString)
+            )
+        );
+
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                const error = result.reason;
                 if (error.statusCode === 410 || error.statusCode === 404) {
-                    invalidSubs.push(subscription.endpoint);
+                    invalidSubs.push(subscriptions[index].endpoint);
                 }
             }
-        }
+        });
 
         if (invalidSubs.length > 0) {
             db.pushSubscriptions[targetUsername] = subscriptions.filter(
