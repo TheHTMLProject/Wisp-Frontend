@@ -1033,7 +1033,17 @@
   <script>
     // --- APP LOGIC ADAPTED FROM ORIGINAL ---
 
-    const socket = io({ path: "/profiles/socket.io/", auth: { username: localStorage.getItem("void_username") || null }, transports: ["websocket"] });
+    const socket = io({ path: "/profiles/socket.io/", auth: { username: localStorage.getItem("void_username") || null, token: localStorage.getItem("void_token") || null }, transports: ["websocket"] });
+
+    socket.on("authSuccess", ({ username, token }) => {
+        if (token) localStorage.setItem("void_token", token);
+        if (username) localStorage.setItem("void_username", username);
+    });
+
+    socket.on("profileUpdateSuccess", ({ username, token }) => {
+        if (token) localStorage.setItem("void_token", token);
+        if (username) localStorage.setItem("void_username", username);
+    });
 
     let myId = null;
     let friends = [];
