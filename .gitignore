@@ -3,3 +3,4 @@ profiles/data.json
 .env
 ads.txt
 public/ads.txt
+vapid-keys.json
