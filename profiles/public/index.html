@@ -663,6 +663,41 @@
       height: 100%;
       object-fit: cover;
     }
+
+    /* Message Actions */
+    .message-row {
+      position: relative;
+      padding-right: 50px; /* Space for actions */
+    }
+    .message-actions {
+      position: absolute;
+      top: -10px;
+      right: 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--bg-tertiary);
+      border-radius: 4px;
+      display: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    .message-row:hover .message-actions {
+      display: flex;
+    }
+    .action-btn {
+      padding: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .action-btn:hover {
+      background: var(--bg-secondary);
+      color: var(--interactive-hover);
+    }
+    .pinned-icon {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-left: 5px;
+      transform: rotate(45deg);
+    }
   </style>
 </head>
 
@@ -752,23 +787,31 @@
             <i class="ri-phone-fill toolbar-icon call-btn" onclick="startCall()"></i>
             <i class="ri-vidicon-fill toolbar-icon toolbar-video" onclick="startCall()"></i>
             <i class="ri-pushpin-fill toolbar-icon"></i>
-            <i class="ri-group-fill toolbar-icon" onclick="openGroupDetails()"></i>
+            <i class="ri-group-fill toolbar-icon" onclick="toggleMembersList()"></i>
             <!-- <i class="ri-question-mark toolbar-icon"></i> -->
           </div>
         </div>
 
-        <div class="chat-messages" id="messagesArea">
-          <!-- Messages go here -->
-        </div>
+        <div style="flex:1; display:flex; overflow:hidden;">
+            <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+                <div class="chat-messages" id="messagesArea">
+                  <!-- Messages go here -->
+                </div>
 
-        <div class="input-area">
-          <div class="input-wrapper">
-            <input id="messageInput" placeholder="Message @User" autocomplete="off" />
-            <div class="input-actions">
-              <div class="input-btn" onclick="toggleGifPicker()"><i class="ri-file-gif-line"></i></div>
-              <div class="input-btn"><i class="ri-emotion-line"></i></div>
+                <div class="input-area">
+                  <div class="input-wrapper">
+                    <input id="messageInput" placeholder="Message @User" autocomplete="off" />
+                    <div class="input-actions">
+                      <div class="input-btn" onclick="toggleGifPicker()"><i class="ri-file-gif-line"></i></div>
+                      <div class="input-btn"><i class="ri-emotion-line"></i></div>
+                    </div>
+                  </div>
+                </div>
             </div>
-          </div>
+
+            <div id="membersSidebar" style="width: 240px; background: var(--bg-secondary); border-left: 1px solid var(--bg-tertiary); display:none; flex-direction:column; overflow-y:auto; padding: 16px;">
+                <!-- Members List -->
+            </div>
         </div>
         <!-- GIF Picker -->
         <div id="gifPicker"
@@ -1330,6 +1373,69 @@
       openChat('server', `${serverId}:general`);
     }
 
+    let currentServerDetails = null;
+
+    function toggleMembersList() {
+        const sidebar = document.getElementById("membersSidebar");
+        sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+        if(sidebar.style.display === 'flex') {
+            renderMembersList();
+        }
+    }
+
+    function renderMembersList() {
+        const sidebar = document.getElementById("membersSidebar");
+        sidebar.innerHTML = "";
+        if (sidebar.style.display === 'none') return;
+
+        if (!activeChatKey) return;
+        const [type, id] = activeChatKey.split(":");
+
+        let members = [];
+        let owner = null;
+
+        if (type === 'dm') {
+            members = [myId, id];
+        } else if (type === 'group') {
+            const g = groups[id];
+            if (g) members = g.members;
+        } else if (type === 'server') {
+             if (currentServerDetails && currentServerDetails.id === id) {
+                 members = currentServerDetails.members || [];
+                 owner = currentServerDetails.owner;
+             }
+        }
+
+        const title = document.createElement("div");
+        title.style.cssText = "text-transform:uppercase; font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:10px;";
+        title.textContent = `Members — ${members.length}`;
+        sidebar.appendChild(title);
+
+        members.forEach(m => {
+            const el = document.createElement("div");
+            el.style.cssText = "display:flex; align-items:center; padding:6px 8px; border-radius:4px; cursor:pointer; margin-bottom:2px;";
+            el.onmouseover = () => el.style.background = "var(--bg-tertiary)";
+            el.onmouseout = () => el.style.background = "transparent";
+
+            const av = document.createElement("div");
+            av.className = "message-avatar";
+            av.style.width = "32px"; av.style.height = "32px"; av.style.fontSize = "14px"; av.style.marginRight = "10px";
+            av.textContent = getAvatarLabel(m);
+
+            const name = document.createElement("div");
+            name.style.fontWeight = "500";
+            name.style.color = (owner === m) ? "var(--yellow)" : "var(--text-normal)";
+            name.textContent = m;
+            if(m === myId) name.textContent += " (You)";
+
+            el.onclick = () => openNicknameModal(m);
+
+            el.appendChild(av);
+            el.appendChild(name);
+            sidebar.appendChild(el);
+        });
+    }
+
     function openChat(type, id) {
       if (type === 'server') {
         activeChatKey = `server:${id}`;
@@ -1362,6 +1468,7 @@
         socket.emit("markRead", { target: id });
       }
       messagesArea.innerHTML = "<div style='padding:20px; text-align:center;'>Loading...</div>";
+      renderMembersList();
     }
 
     function backToSafeList() {
@@ -1378,9 +1485,7 @@
       if (!history) return;
       if (!append) messagesArea.innerHTML = "";
 
-      // Grouping logic
       let lastUser = null;
-      let lastTimestamp = 0;
 
       for (let i = 0; i < history.length; i++) {
         const entry = history[i];
@@ -1415,24 +1520,70 @@
           contentElement = document.createTextNode(text || "");
         }
 
-        // Check if we bundle with previous message
-        // Same user, less than 5 minutes diff
-        const time = entry.ts || Date.now(); // Assuming history has timestamps, default to now if missing
-        // Fix: server.js doesn't seem to explicitly send `ts` in all history logic viewed, but usually DB has it. 
-        // If missing, grouping might look odd.
-
         const isContinuation = (entry.from === lastUser);
 
+        let row = document.createElement("div");
+        row.className = "message-row";
+        if(entry.id) row.id = `msg-${entry.id}`;
+
+        if(entry.pinned) row.style.backgroundColor = "rgba(255, 200, 0, 0.1)";
+
+        const body = document.createElement("div");
+        body.className = "message-body";
+        body.appendChild(contentElement);
+        if(entry.pinned) {
+             const icon = document.createElement("i");
+             icon.className = "ri-pushpin-fill pinned-icon";
+             body.appendChild(icon);
+        }
+        row.appendChild(body);
+
+        if(!isSystem && entry.id) {
+            const actions = document.createElement("div");
+            actions.className = "message-actions";
+
+            const pinBtn = document.createElement("div");
+            pinBtn.className = "action-btn";
+            pinBtn.innerHTML = entry.pinned ? '<i class="ri-unpin-fill"></i>' : '<i class="ri-pushpin-fill"></i>';
+            pinBtn.title = entry.pinned ? "Unpin Message" : "Pin Message";
+            pinBtn.onclick = () => socket.emit(entry.pinned ? "unpinMessage" : "pinMessage", { id: entry.id, context: activeChatKey });
+            actions.appendChild(pinBtn);
+
+            if (isMe) {
+               const delBtn = document.createElement("div");
+               delBtn.className = "action-btn";
+               delBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+               delBtn.title = "Delete Message";
+               delBtn.onclick = () => {
+                   if(confirm("Delete this message?")) {
+                       socket.emit("deleteMessage", { id: entry.id, context: activeChatKey });
+                   }
+               };
+               actions.appendChild(delBtn);
+           }
+           row.appendChild(actions);
+        }
+
         if (isContinuation) {
-          // Append to last message group
           const groups = messagesArea.getElementsByClassName("message-group");
           const lastGroup = groups[groups.length - 1];
-          const contentDiv = lastGroup.querySelector(".message-content");
-          const body = document.createElement("div");
-          body.className = "message-body";
-          body.appendChild(contentElement);
-          contentDiv.appendChild(body);
+          if(lastGroup) {
+              const contentDiv = lastGroup.querySelector(".message-content");
+              contentDiv.appendChild(row);
+          } else {
+              const div = createMessageGroup(entry, isMe, row);
+              messagesArea.appendChild(div);
+          }
         } else {
+          const div = createMessageGroup(entry, isMe, row);
+          messagesArea.appendChild(div);
+        }
+        lastUser = entry.from;
+      }
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function createMessageGroup(entry, isMe, contentRow) {
           const div = document.createElement("div");
           div.className = "message-group";
 
@@ -1455,31 +1606,57 @@
 
           const timestamp = document.createElement("span");
           timestamp.className = "message-timestamp";
-          timestamp.textContent = new Date().toLocaleTimeString();
+          timestamp.textContent = new Date(entry.ts || Date.now()).toLocaleTimeString();
 
           header.appendChild(username);
           header.appendChild(timestamp);
 
-          const body = document.createElement("div");
-          body.className = "message-body";
-          body.appendChild(contentElement);
-
           content.appendChild(header);
-          content.appendChild(body);
+          content.appendChild(contentRow);
 
           div.appendChild(avatar);
           div.appendChild(content);
-
-          messagesArea.appendChild(div);
-        }
-        lastUser = entry.from;
-      }
-      messagesArea.scrollTop = messagesArea.scrollHeight;
+          return div;
     }
 
     function getAvatarLabel(id) {
       return (nicknames[id] || id)[0].toUpperCase();
     }
+
+    socket.on("messageDeleted", ({ id }) => {
+        const el = document.getElementById(`msg-${id}`);
+        if(el) {
+            const group = el.closest(".message-group");
+            el.remove();
+            if(group && group.querySelectorAll(".message-row").length === 0) {
+                group.remove();
+            }
+        }
+    });
+
+    socket.on("messageUpdated", ({ message }) => {
+       const el = document.getElementById(`msg-${message.id}`);
+       if(el) {
+           if(message.pinned) {
+               el.style.backgroundColor = "rgba(255, 200, 0, 0.1)";
+               if(!el.querySelector(".pinned-icon")) {
+                   const icon = document.createElement("i");
+                   icon.className = "ri-pushpin-fill pinned-icon";
+                   el.querySelector(".message-body").appendChild(icon);
+               }
+           } else {
+               el.style.backgroundColor = "transparent";
+               el.querySelector(".pinned-icon")?.remove();
+           }
+
+           const pinBtn = el.querySelector(".ri-pushpin-fill, .ri-unpin-fill")?.closest(".action-btn");
+           if(pinBtn) {
+               pinBtn.innerHTML = message.pinned ? '<i class="ri-unpin-fill"></i>' : '<i class="ri-pushpin-fill"></i>';
+               pinBtn.title = message.pinned ? "Unpin Message" : "Pin Message";
+               pinBtn.onclick = () => socket.emit(message.pinned ? "unpinMessage" : "pinMessage", { id: message.id, context: activeChatKey });
+           }
+       }
+    });
 
     // Input Handling
     async function sendMessage() {
@@ -1535,9 +1712,10 @@
     });
 
     socket.on("serverData", ({ server, messages }) => {
-      // Cache server data?
-      // For now, just render if active
-      // logic handled in renderList/openChat
+        currentServerDetails = server;
+        if (activeChatKey && activeChatKey.startsWith(`server:${server.id}`)) {
+             renderMembersList();
+        }
     });
 
     // Modals
