@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credits - Lightlink</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/ui-elements.css">
+    <link rel="stylesheet" href="css/overlays.css">
+    <link rel="stylesheet" href="css/credits.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .lucide {
+            width: 1.2rem;
+            height: 1.2rem;
+            stroke-width: 2;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.topology.min.js"></script>
+</head>
+
+<body>
+    <div id="vanta-bg"></div>
+
+    <div class="credits-container">
+        <header class="credits-header">
+            <a href="/" class="back-btn">
+                <i data-lucide="arrow-left"></i> Back
+            </a>
+            <h1 class="credits-title">Credits</h1>
+            <p class="credits-subtitle">The software powering Lightlink</p>
+        </header>
+
+        <div class="section">
+            <div class="section-title">
+                <i data-lucide="github"></i>
+                Source Code
+            </div>
+            <div class="package-grid">
+                <a href="https://github.com/lightight/lightlink" target="_blank" class="package-item"
+                    style="text-decoration: none; color: inherit;">
+                    <span class="pkg-name">Lightlink Github Repository</span>
+                    <span class="pkg-version">https://github.com/lightight/lightlink</span>
+                </a>
+            </div>
+        </div>
+        <div class="section">
+            <div class="section-title">
+                <i data-lucide="server"></i>
+                Backend Dependencies
+            </div>
+            <div class="package-grid">
+                <div class="package-item">
+                    <span class="pkg-name">fastify</span>
+                    <span class="pkg-version">^5.6.2</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@fastify/rate-limit</span>
+                    <span class="pkg-version">^10.3.0</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@fastify/static</span>
+                    <span class="pkg-version">^8.3.0</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@mercuryworkshop/bare-as-module3</span>
+                    <span class="pkg-version">^2.2.5</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@mercuryworkshop/bare-mux</span>
+                    <span class="pkg-version">2.1.8</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@mercuryworkshop/epoxy-transport</span>
+                    <span class="pkg-version">^2.1.28</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@mercuryworkshop/libcurl-transport</span>
+                    <span class="pkg-version">^1.5.2</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@mercuryworkshop/scramjet</span>
+                    <span class="pkg-version">2.0.0-alpha</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">@tomphttp/bare-server-node</span>
+                    <span class="pkg-version">^2.0.6</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">bare-server-node</span>
+                    <span class="pkg-version">^2.0.3</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">socket.io</span>
+                    <span class="pkg-version">^4.8.1</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">web-push</span>
+                    <span class="pkg-version">^3.6.7</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">ws</span>
+                    <span class="pkg-version">^8.18.3</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">unique-names-generator</span>
+                    <span class="pkg-version">^4.7.1</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">uuid</span>
+                    <span class="pkg-version">^10.0.0</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">node-fetch</span>
+                    <span class="pkg-version">^3.3.2</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">dotenv</span>
+                    <span class="pkg-version">^16.6.1</span>
+                </div>
+                <div class="package-item">
+                    <span class="pkg-name">fastify-plugin</span>
+                    <span class="pkg-version">^5.1.0</span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="section">
+            <div class="section-title">
+                <i data-lucide="app-window"></i>
+                Frontend Libraries
+            </div>
+            <div class="frontend-list">
+                <div class="list-item">
+                    <span class="item-name">Three.js</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">Vanta.js</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">p5.js</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">GSAP</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">BareMux</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">Epoxy</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">Lucide Icons</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">tinyjet</span>
+                </div>
+                <div class="list-item">
+                    <span class="item-name">waves proxy</span>
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+            if (window.VANTA) {
+                VANTA.TOPOLOGY({
+                    el: "#vanta-bg",
+                    mouseControls: true,
+                    touchControls: true,
+                    gyroControls: false,
+                    minHeight: 200.00,
+                    minWidth: 200.00,
+                    scale: 1.00,
+                    scaleMobile: 1.00,
+                    color: 0x4a4a4a,
+                    backgroundColor: 0x000000
+                });
+            }
+            lucide.createIcons();
+        </script>
+</body>
+
+</html>

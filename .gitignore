@@ -1,0 +1,5 @@
+node_modules
+profiles/data.json
+.env
+ads.txt
+public/ads.txt

@@ -1,0 +1,10 @@
+{
+	"name": "lightlink",
+	"description": "lightlink proxy",
+	"repository": "https://github.com/lightight/lightlink",
+	"logo": "https://raw.githubusercontent.com/lightight/lightlink/public/favicon.ico",
+	"keywords": [
+		"proxy",
+		"lightlink"
+	]
+}

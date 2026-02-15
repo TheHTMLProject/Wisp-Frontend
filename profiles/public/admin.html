@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4207227785539100"
+        crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://lightlink.space/profiles/admin.html" />
+    <title>light.admin</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
+
+        .login-box {
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+        }
+
+        .login-logo {
+            font-size: 48px;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #dc2626;
+        }
+
+        .login-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .login-error {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .login-error.show {
+            display: block;
+        }
+
+        .container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .container.visible {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: rgba(15, 15, 20, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ef4444;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo .material-icons {
+            font-size: 28px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+            color: #888;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .nav-item .material-icons {
+            font-size: 20px;
+        }
+
+        .logout-section {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #888;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-dot.connected {
+            background: #22c55e;
+        }
+
+        .status-dot.disconnected {
+            background: #ef4444;
+        }
+
+        .main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-title .material-icons {
+            color: #ef4444;
+        }
+
+        .card {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .users-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .users-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge.online {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .badge.offline {
+            background: rgba(100, 100, 100, 0.2);
+            color: #888;
+        }
+
+        .badge.push {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-right: 4px;
+        }
+
+        .action-btn.warn {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .log-area {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .log-entry.success {
+            color: #22c55e;
+        }
+
+        .log-entry.error {
+            color: #ef4444;
+        }
+
+        .log-entry.info {
+            color: #3b82f6;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 24px;
+            min-width: 400px;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ef4444;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-screen" id="login-screen">
+        <div class="login-box">
+            <div class="login-logo">
+                <span class="material-icons" style="font-size:64px;">admin_panel_settings</span>
+            </div>
+            <h1 class="login-title">Admin Console</h1>
+            <p class="login-subtitle">Enter admin password to continue</p>
+            <input type="password" class="login-input" id="login-password" placeholder="Password" autofocus>
+            <button class="login-btn" id="login-btn" onclick="attemptLogin()">
+                <span class="material-icons" style="vertical-align:middle;margin-right:8px;">lock_open</span>
+                Authenticate
+            </button>
+            <div class="login-error" id="login-error">Invalid password. Access denied.</div>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
+        <div class="sidebar">
+            <div class="logo">
+                <span class="material-icons">admin_panel_settings</span>
+                ADMIN
+            </div>
+
+            <div class="nav-item active" data-page="dashboard">
+                <span class="material-icons">dashboard</span>
+                Dashboard
+            </div>
+            <div class="nav-item" data-page="users">
+                <span class="material-icons">people</span>
+                Users
+            </div>
+            <div class="nav-item" data-page="push">
+                <span class="material-icons">notifications</span>
+                Push Notifications
+            </div>
+            <div class="nav-item" data-page="bans">
+                <span class="material-icons">block</span>
+                Bans & Mutes
+            </div>
+            <div class="nav-item" data-page="broadcast">
+                <span class="material-icons">campaign</span>
+                Broadcast
+            </div>
+            <div class="nav-item" data-page="reports">
+                <span class="material-icons">report</span>
+                Reports
+            </div>
+
+            <div class="logout-section">
+                <div class="status-indicator">
+                    <span class="status-dot connected" id="status-dot"></span>
+                    <span id="connection-status">Connected</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <span class="material-icons">logout</span>
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="page active" id="page-dashboard">
+                <h1 class="page-title">
+                    <span class="material-icons">dashboard</span>
+                    Dashboard
+                    <button class="refresh-btn" onclick="refreshStats()">
+                        <span class="material-icons">refresh</span>
+                    </button>
+                </h1>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-online">0</div>
+                        <div class="stat-label">Online Now</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-push">0</div>
+                        <div class="stat-label">Push Enabled</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-bans">-</div>
+                        <div class="stat-label">Active Bans</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-reports">0</div>
+                        <div class="stat-label">Pending Reports</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Activity Log</div>
+                    <div class="log-area" id="log-area">
+                        <div class="log-entry info">Admin panel ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="page-users">
+                <h1 class="page-title">
+                    <span class="material-icons">people</span>
+                    User Management
+                    <button class="refresh-btn" onclick="loadUsers()">
+                        <span class="material-icons">refresh</span>
+                    </button>
+                </h1>
+
+                <div class="card">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th>Friends</th>
+                                <th>Push</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-tbody">
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:#666;">Loading users...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="page" id="page-push">
+                <h1 class="page-title">
+                    <span class="material-icons">notifications</span>
+                    Send Push Notification
+                </h1>
+
+                <div class="card">
+                    <div class="form-group">
+                        <label class="form-label">Target Username</label>
+                        <input type="text" class="form-input" id="push-target" placeholder="Enter username...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notification Title</label>
+                        <input type="text" class="form-input" id="push-title" placeholder="Important Notice">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notification Body</label>
+                        <input type="text" class="form-input" id="push-body" placeholder="Your message here...">
+                    </div>
+                    <button class="btn btn-primary" onclick="sendPush()">
+                        <span class="material-icons">send</span>
+                        Send Push Notification
+                    </button>
+                </div>
+            </div>
+
+            <div class="page" id="page-bans">
+                <h1 class="page-title">
+                    <span class="material-icons">block</span>
+                    Bans & Mutes
+                </h1>
+
+                <div class="card">
+                    <div class="card-header">Ban User</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="ban-target" placeholder="Username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duration (minutes, 0=permanent)</label>
+                            <input type="number" class="form-input" id="ban-duration" value="60">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
+                        <input type="text" class="form-input" id="ban-reason" placeholder="Reason for ban...">
+                    </div>
+                    <button class="btn btn-primary" onclick="banUser()">
+                        <span class="material-icons">block</span>
+                        Ban User
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Mute User</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="mute-target" placeholder="Username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duration (minutes, 0=permanent)</label>
+                            <input type="number" class="form-input" id="mute-duration" value="30">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="muteUser()" style="background:#8b5cf6;">
+                        <span class="material-icons">volume_off</span>
+                        Mute User
+                    </button>
+                    <button class="btn btn-secondary" onclick="unmuteUser()" style="margin-left:8px;">
+                        <span class="material-icons">volume_up</span>
+                        Unmute
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Unban IP</div>
+                    <div class="form-group">
+                        <label class="form-label">IP Address</label>
+                        <input type="text" class="form-input" id="unban-ip" placeholder="192.168.1.1">
+                    </div>
+                    <button class="btn btn-secondary" onclick="unbanIP()">
+                        <span class="material-icons">lock_open</span>
+                        Unban IP
+                    </button>
+                    <button class="btn btn-secondary" onclick="listBans()" style="margin-left:8px;">
+                        <span class="material-icons">list</span>
+                        View All Bans
+                    </button>
+                </div>
+            </div>
+
+            <div class="page" id="page-broadcast">
+                <h1 class="page-title">
+                    <span class="material-icons">campaign</span>
+                    System Broadcast
+                </h1>
+
+                <div class="card">
+                    <div class="form-group">
+                        <label class="form-label">Broadcast Message</label>
+                        <input type="text" class="form-input" id="broadcast-msg"
+                            placeholder="Your announcement to all users...">
+                    </div>
+                    <button class="btn btn-primary" onclick="sendBroadcast()">
+                        <span class="material-icons">send</span>
+                        Send to All Users
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Warn Specific User</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="warn-target" placeholder="Username">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Warning Message</label>
+                            <input type="text" class="form-input" id="warn-msg"
+                                placeholder="Please follow the rules...">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="warnUser()" style="background:#f59e0b;">
+                        <span class="material-icons">warning</span>
+                        Send Warning
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="page" id="page-reports">
+            <h1 class="page-title">
+                <span class="material-icons">report</span>
+                User Reports
+                <button class="refresh-btn" onclick="loadReports()">
+                    <span class="material-icons">refresh</span>
+                </button>
+            </h1>
+
+            <div class="card">
+                <div class="card-header">Pending Reports</div>
+                <div id="reports-container" style="max-height: 600px; overflow-y: auto;">
+                    <div style="color:#666; text-align:center; padding:20px;">Loading reports...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="modal-overlay" id="user-modal">
+        <div class="modal">
+            <div class="modal-title">Actions for <span id="modal-username"></span></div>
+            <div class="form-group">
+                <label class="form-label">Quick Actions</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn btn-secondary" onclick="quickWarn()">
+                        <span class="material-icons">warning</span> Warn
+                    </button>
+                    <button class="btn btn-secondary" onclick="quickMute()" style="background:rgba(139,92,246,0.3);">
+                        <span class="material-icons">volume_off</span> Mute
+                    </button>
+                    <button class="btn btn-secondary" onclick="quickPush()">
+                        <span class="material-icons">notifications</span> Push
+                    </button>
+                    <button class="btn btn-primary" onclick="quickBan()">
+                        <span class="material-icons">block</span> Ban
+                    </button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+        const socket = io({ path: "/profiles/socket.io/" });
+        let adminPassword = '';
+        let isAuthenticated = false;
+        let currentUsers = [];
+        let selectedUser = null;
+
+        document.getElementById('login-password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') attemptLogin();
+        });
+
+        function attemptLogin() {
+            const password = document.getElementById('login-password').value;
+            if (!password) return;
+
+            document.getElementById('login-btn').disabled = true;
+            document.getElementById('login-btn').textContent = 'Verifying...';
+
+            adminPassword = password;
+            socket.emit('adminVerifyPassword', { password });
+        }
+
+        socket.on('adminVerified', ({ success }) => {
+            if (success) {
+                isAuthenticated = true;
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-container').classList.add('visible');
+                document.getElementById('login-error').classList.remove('show');
+
+                loadUsers();
+                loadReports();
+                addLog('Authenticated successfully', 'success');
+            } else {
+                document.getElementById('login-error').classList.add('show');
+                document.getElementById('login-btn').disabled = false;
+                document.getElementById('login-btn').innerHTML = '<span class="material-icons" style="vertical-align:middle;margin-right:8px;">lock_open</span> Authenticate';
+                adminPassword = '';
+            }
+        });
+
+        function logout() {
+            isAuthenticated = false;
+            adminPassword = '';
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('main-container').classList.remove('visible');
+            document.getElementById('login-password').value = '';
+        }
+
+        function getPassword() {
+            return adminPassword;
+        }
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById('page-' + item.dataset.page).classList.add('active');
+            });
+        });
+
+        socket.on('connect', () => {
+            document.getElementById('status-dot').className = 'status-dot connected';
+            document.getElementById('connection-status').textContent = 'Connected';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('status-dot').className = 'status-dot disconnected';
+            document.getElementById('connection-status').textContent = 'Disconnected';
+        });
+
+        socket.on('system', (data) => {
+            addLog(data.msg, data.msg.toLowerCase().includes('error') || data.msg.toLowerCase().includes('denied') ? 'error' : 'success');
+        });
+
+        socket.on('adminUsersList', ({ users }) => {
+            currentUsers = users;
+            renderUsers(users);
+
+            document.getElementById('stat-total').textContent = users.length;
+            document.getElementById('stat-online').textContent = users.filter(u => u.online).length;
+            document.getElementById('stat-push').textContent = users.filter(u => u.hasPush).length;
+        });
+
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry ' + type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.insertBefore(entry, logArea.firstChild);
+
+            while (logArea.children.length > 50) {
+                logArea.removeChild(logArea.lastChild);
+            }
+        }
+
+        function refreshStats() {
+            loadUsers();
+        }
+
+        function loadUsers() {
+            socket.emit('adminGetAllUsers', { password: getPassword() });
+            loadReports();
+        }
+
+        function loadReports() {
+            socket.emit('adminGetReports', { password: getPassword() });
+        }
+
+        socket.on('adminReportsList', ({ reports }) => {
+            const container = document.getElementById('reports-container');
+            document.getElementById('stat-reports').textContent = reports.length;
+
+            if (reports.length === 0) {
+                container.innerHTML = '<div style="color:#666; text-align:center; padding:20px;">No pending reports</div>';
+                return;
+            }
+
+            container.innerHTML = reports.map(r => `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-size: 14px; color: #ef4444; font-weight: 600;">Report ID: ${r.id}</div>
+                            <div style="font-size: 12px; color: #888;">${new Date(r.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="action-btn warn" onclick="openUserModal('${r.reportedUser}')">Moderate User</button>
+                            <button class="action-btn" style="background:#444; color:#fff;" onclick="deleteReport('${r.id}')">Dismiss</button>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px;">Reporter</div>
+                            <div style="font-weight: 600; color: #3b82f6;">${r.reporter}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px;">Reported User</div>
+                            <div style="font-weight: 600; color: #ef4444;">${r.reportedUser}</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px;">
+                        <div style="font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 8px;">Reported Message</div>
+                        <div style="color: #e2e8f0; line-height: 1.5;">${escapeHtml(r.message)}</div>
+                        <div style="font-size: 11px; color: #888; margin-top: 8px;">Context: ${r.context}</div>
+                    </div>
+                </div>
+            `).join('');
+        });
+
+        function deleteReport(reportId) {
+            if (confirm('Delete this report?')) {
+                socket.emit('adminDeleteReport', { password: getPassword(), reportId });
+            }
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('users-tbody');
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#666;">No users found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td><strong>${u.username}</strong></td>
+                    <td><span class="badge ${u.online ? 'online' : 'offline'}">${u.online ? '● Online' : '○ Offline'}</span></td>
+                    <td>${u.friends}</td>
+                    <td>${u.hasPush ? '<span class="badge push">✓ Enabled</span>' : '<span style="color:#666">—</span>'}</td>
+                    <td>
+                        <button class="action-btn warn" onclick="openUserModal('${u.username}')">Actions</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openUserModal(username) {
+            selectedUser = username;
+            document.getElementById('modal-username').textContent = username;
+            document.getElementById('user-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('user-modal').classList.remove('active');
+            selectedUser = null;
+        }
+
+        function quickWarn() {
+            const msg = prompt('Warning message:');
+            if (msg) {
+                socket.emit('adminWarn', { password: getPassword(), target: selectedUser, message: msg });
+                closeModal();
+            }
+        }
+
+        function quickMute() {
+            const mins = prompt('Mute duration (minutes):', '30');
+            if (mins !== null) {
+                socket.emit('adminMute', { password: getPassword(), target: selectedUser, durationMinutes: parseInt(mins) || 0 });
+                closeModal();
+            }
+        }
+
+        function quickPush() {
+            const title = prompt('Notification title:', 'Admin Notice');
+            const body = prompt('Notification body:');
+            if (title && body) {
+                socket.emit('adminSendPush', { password: getPassword(), target: selectedUser, title, body });
+                closeModal();
+            }
+        }
+
+        function quickBan() {
+            if (confirm(`Ban ${selectedUser}?`)) {
+                const mins = prompt('Ban duration (minutes, 0=permanent):', '60');
+                const reason = prompt('Reason:', 'Violation of terms');
+                socket.emit('adminBan', { password: getPassword(), target: selectedUser, durationMinutes: parseInt(mins) || 0, reason });
+                closeModal();
+            }
+        }
+
+        function sendPush() {
+            const target = document.getElementById('push-target').value;
+            const title = document.getElementById('push-title').value;
+            const body = document.getElementById('push-body').value;
+            socket.emit('adminSendPush', { password: getPassword(), target, title, body });
+        }
+
+        function banUser() {
+            const target = document.getElementById('ban-target').value;
+            const duration = parseInt(document.getElementById('ban-duration').value) || 0;
+            const reason = document.getElementById('ban-reason').value;
+            socket.emit('adminBan', { password: getPassword(), target, durationMinutes: duration, reason });
+        }
+
+        function muteUser() {
+            const target = document.getElementById('mute-target').value;
+            const duration = parseInt(document.getElementById('mute-duration').value) || 0;
+            socket.emit('adminMute', { password: getPassword(), target, durationMinutes: duration });
+        }
+
+        function unmuteUser() {
+            const target = document.getElementById('mute-target').value;
+            socket.emit('adminUnmute', { password: getPassword(), target });
+        }
+
+        function unbanIP() {
+            const ip = document.getElementById('unban-ip').value;
+            socket.emit('adminUnban', { password: getPassword(), ip });
+        }
+
+        function listBans() {
+            socket.emit('adminListBans', { password: getPassword() });
+        }
+
+        function sendBroadcast() {
+            const message = document.getElementById('broadcast-msg').value;
+            socket.emit('adminBroadcast', { password: getPassword(), message });
+        }
+
+        function warnUser() {
+            const target = document.getElementById('warn-target').value;
+            const message = document.getElementById('warn-msg').value;
+            socket.emit('adminWarn', { password: getPassword(), target, message });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+
+</html>
