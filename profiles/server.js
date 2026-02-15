@@ -1554,6 +1554,163 @@ export default async function profilesPlugin(fastify, opts) {
         });
 
 
+        socket.on("deleteMessage", ({ id, context }) => {
+            if (!id || !context) return;
+            const [type, contextId, channelId] = context.split(":");
+            let messageFound = false;
+            let targetMembers = [];
+
+            if (type === 'dm') {
+                const key = [username, contextId].sort().join("|");
+                if (db.dmHistory[key]) {
+                    const idx = db.dmHistory[key].findIndex(m => m.id === id);
+                    if (idx !== -1) {
+                        if (db.dmHistory[key][idx].from === username) {
+                            db.dmHistory[key].splice(idx, 1);
+                            messageFound = true;
+                            // Reconstruct target members for DM (both parties)
+                            targetMembers = key.split("|");
+                        }
+                    }
+                }
+            } else if (type === 'group') {
+                const group = db.groups[contextId];
+                if (group) {
+                    const idx = group.history.findIndex(m => m.id === id);
+                    if (idx !== -1) {
+                        if (group.history[idx].from === username) {
+                            group.history.splice(idx, 1);
+                            messageFound = true;
+                            targetMembers = group.members;
+                        }
+                    }
+                }
+            } else if (type === 'server') {
+                const server = db.servers[contextId];
+                if (server) {
+                    const msgs = db.serverMessages[contextId]?.[channelId];
+                    if (msgs) {
+                        const idx = msgs.findIndex(m => m.id === id);
+                        if (idx !== -1) {
+                            // Allow owner to delete any message
+                            if (msgs[idx].from === username || server.owner === username) {
+                                msgs.splice(idx, 1);
+                                messageFound = true;
+                                targetMembers = server.members;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (messageFound) {
+                saveData();
+                targetMembers.forEach(m => {
+                    io.to(m).emit("messageDeleted", { id, context });
+                });
+            }
+        });
+
+        socket.on("pinMessage", ({ id, context }) => {
+            if (!id || !context) return;
+            const [type, contextId, channelId] = context.split(":");
+            let messageFound = false;
+            let msg = null;
+            let targetMembers = [];
+
+            if (type === 'dm') {
+                const key = [username, contextId].sort().join("|");
+                if (db.dmHistory[key]) {
+                    msg = db.dmHistory[key].find(m => m.id === id);
+                    if (msg) {
+                        msg.pinned = true;
+                        messageFound = true;
+                        targetMembers = key.split("|");
+                    }
+                }
+            } else if (type === 'group') {
+                const group = db.groups[contextId];
+                if (group) {
+                    msg = group.history.find(m => m.id === id);
+                    if (msg) {
+                        msg.pinned = true;
+                        messageFound = true;
+                        targetMembers = group.members;
+                    }
+                }
+            } else if (type === 'server') {
+                const server = db.servers[contextId];
+                if (server) {
+                    const msgs = db.serverMessages[contextId]?.[channelId];
+                    if (msgs) {
+                        msg = msgs.find(m => m.id === id);
+                        if (msg && server.owner === username) {
+                            msg.pinned = true;
+                            messageFound = true;
+                            targetMembers = server.members;
+                        }
+                    }
+                }
+            }
+
+            if (messageFound) {
+                saveData();
+                targetMembers.forEach(m => {
+                    io.to(m).emit("messageUpdated", { message: msg, context });
+                });
+            }
+        });
+
+        socket.on("unpinMessage", ({ id, context }) => {
+            if (!id || !context) return;
+            const [type, contextId, channelId] = context.split(":");
+            let messageFound = false;
+            let msg = null;
+            let targetMembers = [];
+
+            if (type === 'dm') {
+                const key = [username, contextId].sort().join("|");
+                if (db.dmHistory[key]) {
+                    msg = db.dmHistory[key].find(m => m.id === id);
+                    if (msg) {
+                        msg.pinned = false;
+                        messageFound = true;
+                        targetMembers = key.split("|");
+                    }
+                }
+            } else if (type === 'group') {
+                const group = db.groups[contextId];
+                if (group) {
+                    msg = group.history.find(m => m.id === id);
+                    if (msg) {
+                        msg.pinned = false;
+                        messageFound = true;
+                        targetMembers = group.members;
+                    }
+                }
+            } else if (type === 'server') {
+                const server = db.servers[contextId];
+                if (server) {
+                    const msgs = db.serverMessages[contextId]?.[channelId];
+                    if (msgs) {
+                        msg = msgs.find(m => m.id === id);
+                        if (msg && server.owner === username) {
+                            msg.pinned = false;
+                            messageFound = true;
+                            targetMembers = server.members;
+                        }
+                    }
+                }
+            }
+
+            if (messageFound) {
+                saveData();
+                targetMembers.forEach(m => {
+                    io.to(m).emit("messageUpdated", { message: msg, context });
+                });
+            }
+        });
+
         // Call Signaling
         socket.on("join-call", ({ groupId, isGroup, target, channelId }) => {
             let callId = groupId;
