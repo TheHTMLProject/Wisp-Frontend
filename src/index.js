@@ -8,7 +8,7 @@ import profilesPlugin from "../profiles/server.js";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import rateLimit from "@fastify/rate-limit";
-
+import { xor } from "./utils/xor.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,38 +22,6 @@ const bareModPath = join(publicPath, "baremod");
 const baremuxPath = join(publicPath, "baremux");
 const scramjetPath = join(__dirname, "../node_modules/@mercuryworkshop/scramjet/dist");
 const scramjetControllerPath = join(__dirname, "../node_modules/@petezah-games/scramjet-controller/dist/controller.api.js");
-
-const xor = {
-	encode(str) {
-		if (!str) return str;
-		let result = "";
-		for (let i = 0; i < str.length; i++) {
-			if (i % 2) {
-				result += String.fromCharCode(str.charCodeAt(i) ^ 2);
-			} else {
-				result += str[i];
-			}
-		}
-		return encodeURIComponent(result);
-	},
-	decode(str) {
-		if (!str) return str;
-		try {
-			const decoded = decodeURIComponent(str);
-			let result = "";
-			for (let i = 0; i < decoded.length; i++) {
-				if (i % 2) {
-					result += String.fromCharCode(decoded.charCodeAt(i) ^ 2);
-				} else {
-					result += decoded[i];
-				}
-			}
-			return result;
-		} catch (e) {
-			return str;
-		}
-	}
-};
 
 
 import fastifyProxy from "@fastify/http-proxy";
