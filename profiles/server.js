@@ -12,6 +12,7 @@ import fetch from "node-fetch";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { getLoginEmail } from "./email.js";
+import { getIP } from "./get-ip.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '../.env') });
@@ -131,14 +132,6 @@ function saveData() {
     } catch (e) {
         console.error("Failed to save data.json:", e);
     }
-}
-
-function getIP(socket) {
-    const headers = socket.handshake.headers;
-    if (headers['cf-connecting-ip']) return headers['cf-connecting-ip'];
-    if (headers['x-real-ip']) return headers['x-real-ip'];
-    if (headers['x-forwarded-for']) return headers['x-forwarded-for'].split(',')[0].trim();
-    return socket.handshake.address;
 }
 
 const transporter = nodemailer.createTransport({
