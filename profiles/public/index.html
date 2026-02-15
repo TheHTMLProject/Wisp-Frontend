@@ -1392,8 +1392,17 @@
             text = await decryptMessage(entry, isMe ? (activeChatKey ? activeChatKey.split(':')[1] : null) : entry.from);
           } catch (e) { }
         }
+
+        let contentElement;
         if (text && text.startsWith("[gif]")) {
-          text = `<img src="${text.substring(5)}" style="max-width:250px; border-radius:4px; margin-top:5px;" loading="lazy">`;
+          contentElement = document.createElement("img");
+          contentElement.src = text.substring(5);
+          contentElement.style.maxWidth = "250px";
+          contentElement.style.borderRadius = "4px";
+          contentElement.style.marginTop = "5px";
+          contentElement.loading = "lazy";
+        } else {
+          contentElement = document.createTextNode(text || "");
         }
 
         // Check if we bundle with previous message
@@ -1411,27 +1420,46 @@
           const contentDiv = lastGroup.querySelector(".message-content");
           const body = document.createElement("div");
           body.className = "message-body";
-          body.innerHTML = text; // Secure this if text is user content? server.js seems to trust input. 
-          // Report button? Hovering individual lines in Discord is a thing.
-          // Simplified: Just append for now
-          if (!isMe && !text.includes("<img")) {
-            // Add report capability logic here if needed
-          }
+          body.appendChild(contentElement);
           contentDiv.appendChild(body);
         } else {
           const div = document.createElement("div");
           div.className = "message-group";
 
-          div.innerHTML = `
-                    <div class="message-avatar" onclick="openNicknameModal('${entry.from}')">${getAvatarLabel(entry.from)}</div>
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-username" onclick="openNicknameModal('${entry.from}')" style="${isMe ? 'color:var(--brand);' : ''}">${entry.from}</span>
-                            <span class="message-timestamp">${new Date().toLocaleTimeString()}</span> 
-                        </div>
-                        <div class="message-body">${text}</div>
-                    </div>
-                `;
+          const avatar = document.createElement("div");
+          avatar.className = "message-avatar";
+          avatar.textContent = getAvatarLabel(entry.from);
+          avatar.onclick = () => openNicknameModal(entry.from);
+
+          const content = document.createElement("div");
+          content.className = "message-content";
+
+          const header = document.createElement("div");
+          header.className = "message-header";
+
+          const username = document.createElement("span");
+          username.className = "message-username";
+          username.textContent = entry.from;
+          username.onclick = () => openNicknameModal(entry.from);
+          if (isMe) username.style.color = "var(--brand)";
+
+          const timestamp = document.createElement("span");
+          timestamp.className = "message-timestamp";
+          timestamp.textContent = new Date().toLocaleTimeString();
+
+          header.appendChild(username);
+          header.appendChild(timestamp);
+
+          const body = document.createElement("div");
+          body.className = "message-body";
+          body.appendChild(contentElement);
+
+          content.appendChild(header);
+          content.appendChild(body);
+
+          div.appendChild(avatar);
+          div.appendChild(content);
+
           messagesArea.appendChild(div);
         }
         lastUser = entry.from;
