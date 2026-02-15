@@ -92,10 +92,13 @@ const fastify = Fastify({
 							delete req.headers["cookie"];
 							if (req.headers["x-bare-headers"]) {
 								try {
-									const headers = JSON.parse(req.headers["x-bare-headers"]);
-									delete headers["cookie"];
-									delete headers["Cookie"];
-									req.headers["x-bare-headers"] = JSON.stringify(headers);
+									const bareHeaders = String(req.headers["x-bare-headers"]);
+									if (bareHeaders.includes("cookie") || bareHeaders.includes("Cookie")) {
+										const headers = JSON.parse(bareHeaders);
+										delete headers["cookie"];
+										delete headers["Cookie"];
+										req.headers["x-bare-headers"] = JSON.stringify(headers);
+									}
 								} catch (e) { }
 							}
 						}
