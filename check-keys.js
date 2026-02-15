@@ -1,6 +1,14 @@
 import webpush from 'web-push';
-const publicKey = 'BPIlwrM77Dy5KancCjN1NXgyjnTSgQ9LVJwaTMIVmie7ka2z2pZ_DxbQG1FOrppX7sWhIZH5eZj6ZtO3PDcCvHI';
-const privateKey = 'QoEk55F6q2udU3c-51skYJSx94N3u6g-x9V3TypSv9g';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const publicKey = process.env.VAPID_PUBLIC_KEY;
+const privateKey = process.env.VAPID_PRIVATE_KEY;
+
+if (!publicKey || !privateKey) {
+    console.error('VAPID keys not found in environment variables. Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY.');
+    process.exit(1);
+}
 
 try {
     const pubBuffer = Buffer.from(publicKey, 'base64');
