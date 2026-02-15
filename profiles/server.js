@@ -304,10 +304,14 @@ export default async function profilesPlugin(fastify, opts) {
     });
 
     fastify.post("/math/push-subscribe", async (request, reply) => {
-        const { username, subscription } = request.body || {};
+        const { username, subscription, token } = request.body || {};
 
         if (!username || !subscription) {
             return reply.code(400).send({ error: "username and subscription required" });
+        }
+
+        if (!db.auth[username] || db.auth[username].token !== token) {
+            return reply.code(403).send({ error: "Unauthorized" });
         }
 
         if (!db.pushSubscriptions[username]) {
