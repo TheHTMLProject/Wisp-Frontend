@@ -424,6 +424,14 @@ export default async function profilesPlugin(fastify, opts) {
     io.on("connection", (socket) => {
         const ip = getIP(socket);
         let username = socket.handshake.auth.username?.trim();
+        const token = socket.handshake.auth.token;
+
+        if (username && db.auth[username]) {
+            if (!token || db.auth[username].token !== token) {
+                socket.emit("authError", { msg: "Authentication required for claimed username. Logged in as guest." });
+                username = null;
+            }
+        }
 
         if (db.bannedIPs[ip]) {
             const ban = db.bannedIPs[ip];
