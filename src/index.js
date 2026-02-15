@@ -26,12 +26,29 @@ const scramjetControllerPath = join(__dirname, "../node_modules/@petezah-games/s
 const xor = {
 	encode(str) {
 		if (!str) return str;
-		return encodeURIComponent(str.split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
+		let result = "";
+		for (let i = 0; i < str.length; i++) {
+			if (i % 2) {
+				result += String.fromCharCode(str.charCodeAt(i) ^ 2);
+			} else {
+				result += str[i];
+			}
+		}
+		return encodeURIComponent(result);
 	},
 	decode(str) {
 		if (!str) return str;
 		try {
-			return decodeURIComponent(str).split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join('');
+			const decoded = decodeURIComponent(str);
+			let result = "";
+			for (let i = 0; i < decoded.length; i++) {
+				if (i % 2) {
+					result += String.fromCharCode(decoded.charCodeAt(i) ^ 2);
+				} else {
+					result += decoded[i];
+				}
+			}
+			return result;
 		} catch (e) {
 			return str;
 		}
