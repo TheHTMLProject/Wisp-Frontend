@@ -4,7 +4,7 @@
  * @param {string} template
  * @returns {string}
  */
-function search(input, template) {
+export function search(input, template) {
     try {
         return new URL(input).toString();
     } catch (err) { }
