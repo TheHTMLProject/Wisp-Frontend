@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"start": "node src/index.js",
+		"test": "node --test profiles/*.test.js",
 		"format": "prettier --write .",
 		"lint": "eslint ./src/",
 		"lint:fix": "eslint ./src/ --fix"
