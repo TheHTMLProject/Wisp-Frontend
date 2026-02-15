@@ -85,11 +85,18 @@ if (existsSync(DATA_FILE)) {
         if (raw.trim()) {
             const fileData = JSON.parse(raw);
             db = { ...defaultDB, ...fileData };
+            // Convert users array to Set for O(1) lookups
+            if (Array.isArray(db.users)) {
+                db.users = new Set(db.users);
+            } else {
+                db.users = new Set();
+            }
         } else {
             db = { ...defaultDB };
+            db.users = new Set();
         }
 
-        if (!Array.isArray(db.users)) db.users = [];
+        if (!(db.users instanceof Set)) db.users = new Set(Array.isArray(db.users) ? db.users : []);
         if (!db.friendships) db.friendships = {};
         if (!db.dmHistory) db.dmHistory = {};
         if (!db.groups) db.groups = {};
@@ -111,11 +118,16 @@ if (existsSync(DATA_FILE)) {
             console.error("Failed to create backup of corrupted data.json", backupErr);
         }
         db = { ...defaultDB };
+        db.users = new Set();
     }
+} else {
+    db.users = new Set();
 }
 function saveData() {
     try {
-        writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+        // Convert Set to Array for JSON serialization
+        const dataToSave = { ...db, users: Array.from(db.users) };
+        writeFileSync(DATA_FILE, JSON.stringify(dataToSave, null, 2));
     } catch (e) {
         console.error("Failed to save data.json:", e);
     }
@@ -445,15 +457,15 @@ export default async function profilesPlugin(fastify, opts) {
             }
         }
 
-        if (!username || !db.users.includes(username)) {
+        if (!username || !db.users.has(username)) {
             if (!username) {
                 username = uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals], separator: "-", length: 3 });
-                while (db.users.includes(username)) {
+                while (db.users.has(username)) {
                     username = `${username}-${uuidv4().slice(0, 4)}`;
                 }
             }
-            if (!db.users.includes(username)) {
-                db.users.push(username);
+            if (!db.users.has(username)) {
+                db.users.add(username);
                 saveData();
             }
         }
@@ -467,8 +479,8 @@ export default async function profilesPlugin(fastify, opts) {
                 return socket.emit("authError", { msg: "Username already registered" });
             }
 
-            if (!db.users.includes(newName)) {
-                db.users.push(newName);
+            if (!db.users.has(newName)) {
+                db.users.add(newName);
             }
 
             const hash = await bcrypt.hash(password, 10);
@@ -492,7 +504,7 @@ export default async function profilesPlugin(fastify, opts) {
 
         socket.on("login", async ({ username: user, password }) => {
             if (!db.auth[user]) {
-                if (db.users.includes(user)) {
+                if (db.users.has(user)) {
                     return socket.emit("authError", { msg: "Account not claimed. Please use Signup to claim this username." });
                 }
                 return socket.emit("authError", { msg: "User not found" });
@@ -686,13 +698,15 @@ export default async function profilesPlugin(fastify, opts) {
 
                 if (newUsername && newUsername !== currentUsername) {
                     if (newUsername.length < 3 || newUsername.length > 20) return socket.emit("authError", { msg: "Invalid username length" });
-                    if (db.users.includes(newUsername)) return socket.emit("authError", { msg: "Username taken" });
+                    if (db.users.has(newUsername)) return socket.emit("authError", { msg: "Username taken" });
 
                     db.auth[newUsername] = db.auth[currentUsername];
                     delete db.auth[currentUsername];
 
-                    const idx = db.users.indexOf(currentUsername);
-                    if (idx !== -1) db.users[idx] = newUsername;
+                    if (db.users.has(currentUsername)) {
+                        db.users.delete(currentUsername);
+                        db.users.add(newUsername);
+                    }
 
                     if (db.pushSubscriptions[currentUsername]) {
                         db.pushSubscriptions[newUsername] = db.pushSubscriptions[currentUsername];
@@ -713,13 +727,15 @@ export default async function profilesPlugin(fastify, opts) {
                 saveData();
                 socket.emit("profileUpdateSuccess", { username: targetUser, token: db.auth[targetUser].token, email: db.auth[targetUser].email });
 
-            } else if (db.users.includes(currentUsername)) {
+            } else if (db.users.has(currentUsername)) {
                 if (newUsername && newUsername !== currentUsername) {
                     if (newUsername.length < 3 || newUsername.length > 20) return socket.emit("authError", { msg: "Invalid username length" });
-                    if (db.users.includes(newUsername)) return socket.emit("authError", { msg: "Username taken" });
+                    if (db.users.has(newUsername)) return socket.emit("authError", { msg: "Username taken" });
 
-                    const idx = db.users.indexOf(currentUsername);
-                    if (idx !== -1) db.users[idx] = newUsername;
+                    if (db.users.has(currentUsername)) {
+                        db.users.delete(currentUsername);
+                        db.users.add(newUsername);
+                    }
 
                     if (db.pushSubscriptions[currentUsername]) {
                         db.pushSubscriptions[newUsername] = db.pushSubscriptions[currentUsername];
@@ -740,7 +756,7 @@ export default async function profilesPlugin(fastify, opts) {
             if (!isValid) return socket.emit("authError", { msg: "Invalid password" });
 
             delete db.auth[username];
-            db.users = db.users.filter(u => u !== username);
+            db.users.delete(username);
             delete db.pushSubscriptions[username];
             saveData();
             socket.emit("accountDeleted");
@@ -922,14 +938,16 @@ export default async function profilesPlugin(fastify, opts) {
                 return socket.emit("system", { msg: `cooldown active. ${hoursLeft} hours left.` });
             }
 
-            if (db.users.includes(newName)) {
+            if (db.users.has(newName)) {
                 return socket.emit("system", { msg: "user already taken." });
             }
 
             const oldName = username;
 
-            const uIdx = db.users.indexOf(oldName);
-            if (uIdx !== -1) db.users[uIdx] = newName;
+            if (db.users.has(oldName)) {
+                db.users.delete(oldName);
+                db.users.add(newName);
+            }
 
             // Update servers
             Object.values(db.servers).forEach(s => {
@@ -1217,7 +1235,7 @@ export default async function profilesPlugin(fastify, opts) {
             const group = db.groups[groupId];
             if (!group || !group.members.includes(username)) return;
             if (targetUsername && !group.members.includes(targetUsername)) {
-                if (db.users.includes(targetUsername)) {
+                if (db.users.has(targetUsername)) {
                     group.members.push(targetUsername);
                     saveData();
 
@@ -1377,7 +1395,7 @@ export default async function profilesPlugin(fastify, opts) {
                 if (rooms[0]) onlineUsers.add(rooms[0]);
             });
 
-            const usersData = db.users.map(username => ({
+            const usersData = Array.from(db.users).map(username => ({
                 username,
                 online: onlineUsers.has(username),
                 friends: (db.friendships[username] || []).length,
