@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import fetch from "node-fetch";
 import rateLimit from "@fastify/rate-limit";
 import { xor } from "./utils/xor.js";
+import { createSuggestionsHandler } from "./suggestions.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -391,21 +392,7 @@ fastify.get("/math/weather", async (request, reply) => {
 	}
 });
 
-fastify.get("/math/suggestions", async (request, reply) => {
-	try {
-		const { q } = request.query;
-		if (!q) return [];
-
-		const res = await fetch(`https://duckduckgo.com/ac/?q=${encodeURIComponent(q)}&type=list`);
-		if (res.ok) {
-			const data = await res.json();
-			return data[1] || [];
-		}
-		return [];
-	} catch (e) {
-		return [];
-	}
-});
+fastify.get("/math/suggestions", createSuggestionsHandler(fetch));
 
 fastify.setNotFoundHandler((req, reply) => {
 	if (req.raw.url.startsWith("/profiles") && !req.raw.url.includes(".")) {
