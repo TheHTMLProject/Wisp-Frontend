@@ -19,8 +19,6 @@ const profilesPublicPath = join(__dirname, "../profiles/public");
 const epoxyPath = join(publicPath, "epoxy");
 const bareModPath = join(publicPath, "baremod");
 const baremuxPath = join(publicPath, "baremux");
-const scramjetPath = join(__dirname, "../node_modules/@mercuryworkshop/scramjet/dist");
-const scramjetControllerPath = join(__dirname, "../node_modules/@petezah-games/scramjet-controller/dist/controller.api.js");
 
 
 import fastifyProxy from "@fastify/http-proxy";
