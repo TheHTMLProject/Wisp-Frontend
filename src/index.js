@@ -83,7 +83,9 @@ const fastify = Fastify({
 										delete headers["Cookie"];
 										req.headers["x-bare-headers"] = JSON.stringify(headers);
 									}
-								} catch (e) { }
+								} catch (e) {
+									console.error("Error parsing x-bare-headers:", e);
+								}
 							}
 						}
 					} catch (e) { }
