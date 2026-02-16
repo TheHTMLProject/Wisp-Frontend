@@ -2001,11 +2001,14 @@
           socket.emit("join-call", { groupId: serverId, isGroup: true, channelId }); // Reusing group logic for server for now
           // Note: server.js handles 'group' calls genericly.
           // We might need to ensure server.js treats serverId as groupId for signaling
+          window.currentCallContext = { type: 'server', groupId: serverId, channelId };
         } else if (type === 'group') {
           socket.emit("join-call", { groupId: id, isGroup: true });
+          window.currentCallContext = { type: 'group', groupId: id };
         } else {
           socket.emit("join-call", { groupId: id, isGroup: false, target: id });
           initiateConnection(id, false, null);
+          window.currentCallContext = { type: 'dm', target: id };
         }
       } catch (e) { console.error(e); alert("Failed to access media devices"); }
     }
@@ -2181,11 +2184,26 @@
       Object.values(peers).forEach(p => p.close());
       peers = {};
 
-      if (activeChatKey) {
+      if (window.currentCallContext) {
+        const { type, groupId, channelId, target } = window.currentCallContext;
+        if (type === 'server') {
+             socket.emit("leave-call", { isGroup: true, groupId: groupId, target: groupId, channelId: channelId });
+        } else if (type === 'group') {
+             socket.emit("leave-call", { isGroup: true, groupId: groupId, target: groupId });
+        } else {
+             socket.emit("leave-call", { isGroup: false, target: target });
+        }
+        window.currentCallContext = null;
+      } else if (activeChatKey) {
         // Leave call logic
         const [type, id] = activeChatKey.split(":");
         const targetId = type === 'server' ? id.split(':')[0] : id;
-        socket.emit("leave-call", { isGroup: type !== 'dm', target: targetId, groupId: targetId });
+        let channelId = null;
+        if (type === 'server') {
+            const parts = activeChatKey.split(':');
+            if (parts.length > 2) channelId = parts[2];
+        }
+        socket.emit("leave-call", { isGroup: type !== 'dm', target: targetId, groupId: targetId, channelId });
       }
     }
 

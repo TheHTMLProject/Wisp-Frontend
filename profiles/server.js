@@ -406,9 +406,8 @@ export default async function profilesPlugin(fastify, opts) {
                 });
             } else {
                 // Check if server
-                // For servers, we iterate all members. 
-                // Optimization: filter by online or just emit to room if we had rooms.
-                const server = db.servers[callId];
+                const [serverId] = callId.split(':');
+                const server = db.servers[serverId];
                 if (server) {
                     server.members.forEach(m => {
                         io.to(m).emit("call-status-changed", { callId, type: 'group', isActive, participants });
@@ -1741,24 +1740,16 @@ export default async function profilesPlugin(fastify, opts) {
             });
         });
 
-        socket.on("leave-call", ({ groupId, isGroup, target }) => {
+        socket.on("leave-call", ({ groupId, isGroup, target, channelId }) => {
             let callId = groupId;
-            // If implicit from client context, we might need better reconstruction.
-            // Client sends: target=targetId, groupId=targetId.
-            // If server call, targetId is serverId.
-            // But wait, if checking channelId?
-            // Ideally client sends exact callKey or we deduce.
-            // For now assuming groupId passed IS the callId or close enough for ID.
-            // Fixing logic:
-            if (!isGroup) callId = [username, target].sort().join("|");
 
-            // If it was a server call with channel? Client sent targetId=serverId.
-            // We need to find which call this user is in if we don't trust ID?
-            // Or client sends full ID?
-            // Client logic: socket.emit("leave-call", { target: targetId, groupId: targetId })
-            // If server call: targetId = serverId. callId = serverId:general?
-            // We need to handle this.
-            // Quick fix: Check if user is in any active server call starting with this ID?
+            if (isGroup && channelId) {
+                callId = `${groupId}:${channelId}`;
+            } else if (!isGroup) {
+                callId = [username, target].sort().join("|");
+            }
+
+            // Quick fix / Fallback: Check if user is in any active server call starting with this ID?
             if (isGroup && db.activeCalls) {
                 // Check if it's a direct match first
                 if (!db.activeCalls[callId]) {
