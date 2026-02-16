@@ -1,7 +1,6 @@
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { hostname } from "node:os";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import profilesPlugin from "../profiles/server.js";
