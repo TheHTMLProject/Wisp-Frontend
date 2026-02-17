@@ -9,6 +9,7 @@ import fetch from "node-fetch";
 import rateLimit from "@fastify/rate-limit";
 import { xor } from "./utils/xor.js";
 import { createFeedbackHandler } from "./handlers/feedback.js";
+import { createSuggestionsHandler } from "./suggestions.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
