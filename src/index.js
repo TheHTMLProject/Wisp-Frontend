@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
-import profilesPlugin from "../profiles/server.js";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import rateLimit from "@fastify/rate-limit";
@@ -11,22 +10,25 @@ import { xor } from "./utils/xor.js";
 import { createFeedbackHandler } from "./handlers/feedback.js";
 import { createSuggestionsHandler } from "./suggestions.js";
 
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const rootPath = join(__dirname, "..");
 const publicPath = join(rootPath, "public");
-const profilesPublicPath = join(__dirname, "../profiles/public");
 const epoxyPath = join(publicPath, "epoxy");
 const bareModPath = join(publicPath, "baremod");
 const baremuxPath = join(publicPath, "baremux");
+const upstreamPort = process.env.UPSTREAM_PORT || "1103";
+const bareUpstream = process.env.BARE_UPSTREAM || `http://localhost:${upstreamPort}`;
+const wispUpstream = process.env.WISP_UPSTREAM || `ws://localhost:${upstreamPort}/wisp/`;
 
 
 import fastifyProxy from "@fastify/http-proxy";
 
 const fastify = Fastify({
-	bodyLimit: 100 * 1024 * 1024, // 100MB
+	bodyLimit: 100 * 1024 * 1024,
 	serverFactory: (handler) => {
 		const server = createServer()
 			.on("request", (req, res) => {
@@ -129,8 +131,7 @@ const fastify = Fastify({
 				if (req.url.startsWith("/wisp/") || req.url.startsWith("/bare/")) {
 					socket.setNoDelay(true);
 					socket.setKeepAlive(true, 10000);
-					// These will be handled by the proxy
-				} else if (!req.url.startsWith("/profiles/socket.io")) {
+				} else {
 					socket.end();
 				}
 			})
@@ -142,16 +143,12 @@ const fastify = Fastify({
 	},
 });
 
-// src/index.js (Port 1100)
-
 fastify.register(fastifyProxy, {
-	upstream: "http://localhost:1103",
+	upstream: bareUpstream,
 	prefix: "/bare/",
 	websocket: true,
 	replyOptions: {
-		// FORCE the path to start with /v... by removing /bare manually
 		rewriteRequestUrl: (originalReq) => {
-			// This turns "/bare/v1/..." into "/v1/..."
 			return originalReq.url.replace(/^\/bare/, "");
 		},
 		rewriteRequestHeaders: (originalReq, headers) => {
@@ -161,10 +158,10 @@ fastify.register(fastifyProxy, {
 });
 
 fastify.register(fastifyProxy, {
-	upstream: "ws://localhost:1103/wisp/",
+	upstream: wispUpstream,
 	prefix: "/wisp/",
 	websocket: true,
-	wsUpstream: "ws://localhost:1103/wisp/"
+	wsUpstream: wispUpstream
 });
 
 await fastify.register(rateLimit, {
@@ -179,10 +176,32 @@ await fastify.register(rateLimit, {
 	skipOnError: true
 });
 
+const FRONTEND_TEXT_FIX_TAG = '<script src="/text-case-fix.js"></script>';
+
 fastify.addHook("onSend", async (req, reply, payload) => {
 	reply.removeHeader("X-Frame-Options");
 	reply.removeHeader("Content-Security-Policy");
-	return payload;
+
+	const contentType = reply.getHeader("content-type");
+	if (typeof contentType !== "string" || !contentType.includes("text/html")) {
+		return payload;
+	}
+
+	if (typeof payload !== "string" && !Buffer.isBuffer(payload)) {
+		return payload;
+	}
+
+	let html = Buffer.isBuffer(payload) ? payload.toString("utf8") : payload;
+	if (!html.includes('src="/text-case-fix.js"')) {
+		if (html.includes("</body>")) {
+			html = html.replace("</body>", `${FRONTEND_TEXT_FIX_TAG}</body>`);
+		} else {
+			html += FRONTEND_TEXT_FIX_TAG;
+		}
+		reply.header("content-length", Buffer.byteLength(html));
+	}
+
+	return html;
 });
 
 const swHeader = (res, path) => {
@@ -215,35 +234,6 @@ fastify.register(fastifyStatic, {
 	root: baremuxPath,
 	prefix: "/baremux/",
 	decorateReply: false,
-});
-
-
-
-// Capture upgrade listeners BEFORE registering profiles plugin (these are proxy-only).
-// Socket.IO will add its own listener when profilesPlugin registers.
-const preProfilesListeners = fastify.server.listeners('upgrade').slice();
-
-fastify.register(profilesPlugin, { prefix: "/profiles" });
-
-// After all plugins register, wrap ONLY the proxy's upgrade listeners
-// to prevent them from intercepting Socket.IO WebSocket upgrades.
-// Without this, @fastify/http-proxy's /* route matches /profiles/socket.io
-// and tries to proxy it to the bare server, causing 'Invalid frame header'.
-fastify.after(() => {
-	const allListeners = fastify.server.listeners('upgrade');
-	fastify.server.removeAllListeners('upgrade');
-	for (const listener of allListeners) {
-		if (preProfilesListeners.includes(listener)) {
-			// This is a proxy listener — wrap it to skip Socket.IO paths
-			fastify.server.on('upgrade', (req, socket, head) => {
-				if (req.url.startsWith('/profiles/socket.io')) return;
-				listener(req, socket, head);
-			});
-		} else {
-			// This is Socket.IO's listener — re-add it unwrapped
-			fastify.server.on('upgrade', listener);
-		}
-	}
 });
 
 fastify.post("/math/feedback", createFeedbackHandler(fetch));
@@ -305,7 +295,7 @@ fastify.get("/math/weather", async (request, reply) => {
 
 		const fetchMetNorway = async () => {
 			const res = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
-				headers: { 'User-Agent': 'lightlink/1.0 github.com/yzycoin/lightlink' }
+				headers: { 'User-Agent': 'the-html-project-connect/1.0 github.com/thehtmlproject/connect' }
 			});
 			if (!res.ok) throw new Error('MET Norway failed');
 			const data = await res.json();
@@ -334,7 +324,6 @@ fastify.get("/math/weather", async (request, reply) => {
 			return `${conditions[weather] || 'Clear'} ${tempF}°F`;
 		};
 
-		// Race 4 targets!
 		const result = await Promise.any([
 			fetchOpenMeteo(),
 			fetchWttrIn(),
@@ -344,7 +333,6 @@ fastify.get("/math/weather", async (request, reply) => {
 		return { success: true, text: result };
 
 	} catch (e) {
-		// If both fail, result in fallback
 		return { success: true, text: "Clear 70°F" };
 	}
 });
@@ -352,9 +340,6 @@ fastify.get("/math/weather", async (request, reply) => {
 fastify.get("/math/suggestions", createSuggestionsHandler(fetch));
 
 fastify.setNotFoundHandler((req, reply) => {
-	if (req.raw.url.startsWith("/profiles") && !req.raw.url.includes(".")) {
-		return reply.sendFile("index.html", profilesPublicPath);
-	}
 	reply.code(404).sendFile("404.html", rootPath);
 });
 
@@ -370,11 +355,11 @@ function shutdown() {
 
 let port = parseInt(process.env.PORT || "");
 
-if (isNaN(port)) port = 1100;
+if (isNaN(port)) port = 9999;
 
 fastify.listen({
 	port: port,
 	host: "0.0.0.0",
 }).then(() => {
-	console.log(`lightlink is running on  http://localhost:${port}. not the correct port? configure it in src/index.js`);
+	console.log(`The HTML Project Connect is running on http://localhost:${port}. Not the correct port? Configure it in src/index.js.`);
 });

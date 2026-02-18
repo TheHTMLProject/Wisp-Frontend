@@ -1,6 +1,6 @@
 {
-    "name": "Lightlink",
-    "short_name": "Lightlink",
+    "name": "The HTML Project Connect",
+    "short_name": "Connect",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",

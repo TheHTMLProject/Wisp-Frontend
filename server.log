@@ -2,6 +2,5 @@
 > lightlink@1.0 start
 > node src/index.js
 
-lightlink is running on  http://localhost:1104. not the correct port? configure it in src/index.js
 [getDM] big-moccasin-cougar requested history with TestUser. Sending 0 items with key TestUser|big-moccasin-cougar
 [sendDM] big-moccasin-cougar -> TestUser: Hello World...

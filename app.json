@@ -1,10 +1,10 @@
 {
-	"name": "lightlink",
-	"description": "lightlink proxy",
-	"repository": "https://github.com/lightight/lightlink",
-	"logo": "https://raw.githubusercontent.com/lightight/lightlink/public/favicon.ico",
+	"name": "the-html-project-connect",
+	"description": "The HTML Project Connect proxy",
+	"repository": "https://thehtmlproject.com",
+	"logo": "https://assets.thehtmlproject.com/icon.jpeg",
 	"keywords": [
 		"proxy",
-		"lightlink"
+		"the-html-project-connect"
 	]
 }
